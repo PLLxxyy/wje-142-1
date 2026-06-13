@@ -14,6 +14,14 @@ router.get('/stats', (_req: AuthRequest, res: Response) => {
   const totalHazards = db.prepare("SELECT COUNT(*) as count FROM rectification_orders").get() as { count: number };
   const pendingHazards = db.prepare("SELECT COUNT(*) as count FROM rectification_orders WHERE status IN ('pending', 'processing')").get() as { count: number };
   const completedHazards = db.prepare("SELECT COUNT(*) as count FROM rectification_orders WHERE status = 'completed'").get() as { count: number };
+  const overdueCount = db.prepare(`
+    SELECT COUNT(*) as count FROM rectification_orders
+    WHERE status != 'completed' AND deadline < date('now', 'localtime')
+  `).get() as { count: number };
+  const dueSoonCount = db.prepare(`
+    SELECT COUNT(*) as count FROM rectification_orders
+    WHERE status != 'completed' AND deadline >= date('now', 'localtime') AND deadline <= date('now', '+3 days', 'localtime')
+  `).get() as { count: number };
 
   res.json({
     totalTasks: totalTasks.count,
@@ -22,6 +30,8 @@ router.get('/stats', (_req: AuthRequest, res: Response) => {
     totalHazards: totalHazards.count,
     pendingHazards: pendingHazards.count,
     completedHazards: completedHazards.count,
+    overdueCount: overdueCount.count,
+    dueSoonCount: dueSoonCount.count,
   });
 });
 

@@ -85,13 +85,15 @@ export default function RectificationList({ user, onView }: Props) {
       ) : (
         <div className="task-list">
           {filteredOrders.map((order) => {
-            const isOverdue = order.status !== 'completed' && new Date(order.deadline) < new Date();
+            const isOverdue = !!order.is_overdue;
+            const isDueSoon = !!order.is_due_soon && !isOverdue;
+            const borderLeftColor = isOverdue ? '#e74c3c' : isDueSoon ? '#f39c12' : order.status === 'completed' ? '#27ae60' : '#3498db';
 
             return (
               <div
                 key={order.id}
                 className={`task-item ${order.status === 'completed' ? 'completed' : ''}`}
-                style={{ borderLeftColor: isOverdue ? '#e74c3c' : order.status === 'completed' ? '#27ae60' : '#f39c12' }}
+                style={{ borderLeftColor }}
                 onClick={() => onView(order.id)}
               >
                 <div className="task-header">
@@ -108,6 +110,18 @@ export default function RectificationList({ user, onView }: Props) {
                           borderRadius: 4,
                         }}>
                           已逾期
+                        </span>
+                      )}
+                      {isDueSoon && (
+                        <span style={{
+                          marginLeft: 8,
+                          fontSize: 11,
+                          background: '#f39c12',
+                          color: 'white',
+                          padding: '2px 6px',
+                          borderRadius: 4,
+                        }}>
+                          即将到期
                         </span>
                       )}
                     </div>

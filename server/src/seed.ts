@@ -34,14 +34,14 @@ function seed() {
   );
 
   const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const yesterdayDate = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
   insertTask.run('A栋日常巡检', 'A栋（办公楼）', 1, today, 'pending');
   insertTask.run('B栋日常巡检', 'B栋（宿舍楼）', 1, today, 'pending');
   insertTask.run('C栋日常巡检', 'C栋（仓库）', 1, today, 'pending');
   insertTask.run('D栋日常巡检', 'D栋（食堂）', 4, today, 'pending');
-  insertTask.run('A栋昨日巡检', 'A栋（办公楼）', 1, yesterday, 'completed');
-  insertTask.run('B栋昨日巡检', 'B栋（宿舍楼）', 1, yesterday, 'completed');
+  insertTask.run('A栋昨日巡检', 'A栋（办公楼）', 1, yesterdayDate, 'completed');
+  insertTask.run('B栋昨日巡检', 'B栋（宿舍楼）', 1, yesterdayDate, 'completed');
 
   console.log('任务数据插入完成');
 
@@ -116,10 +116,18 @@ function seed() {
   );
 
   const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const dayAfterTomorrow = new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0];
+  const threeDaysLater = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0];
 
   insertRect.run(5, task5AbnormalItem, '灭火器压力不足，请立即更换或重新充装', 2, nextWeek, 'pending');
-  insertRect.run(6, task6BlockedPassageItem, '消防通道堆放杂物，请清理', 2, nextWeek, 'pending');
-  insertRect.run(6, task6EmergencyLightItem, '应急灯电池耗尽，请更换', 5, nextWeek, 'processing');
+  insertRect.run(6, task6BlockedPassageItem, '消防通道堆放杂物，请清理', 2, tomorrow, 'pending');
+  insertRect.run(6, task6EmergencyLightItem, '应急灯电池耗尽，请更换', 5, dayAfterTomorrow, 'processing');
+  insertRect.run(5, task5Items[0], '防火门无法正常关闭，需维修', 2, threeDaysLater, 'pending');
+  insertRect.run(5, task5Items[1], '烟感报警器故障未响应', 5, yesterday, 'pending');
+  insertRect.run(6, task6Items[0], '消防栓水压不足，需检查供水系统', 2, twoDaysAgo, 'processing');
 
   console.log('整改单数据插入完成');
 

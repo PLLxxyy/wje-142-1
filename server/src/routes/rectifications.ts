@@ -9,53 +9,31 @@ router.get('/', (req: AuthRequest, res: Response) => {
   const user = req.user!;
   let orders;
 
+  const baseQuery = `SELECT ro.*,
+          ii.item_name, ii.category,
+          t.title as task_title, t.area,
+          rp.display_name as responsible_person_name,
+          rv.display_name as reviewer_name,
+          CASE
+            WHEN ro.status != 'completed' AND ro.deadline < date('now', 'localtime') THEN 1
+            ELSE 0
+          END as is_overdue,
+          CASE
+            WHEN ro.status != 'completed' AND ro.deadline >= date('now', 'localtime') AND ro.deadline <= date('now', '+3 days', 'localtime') THEN 1
+            ELSE 0
+          END as is_due_soon
+   FROM rectification_orders ro
+   JOIN inspection_items ii ON ro.inspection_item_id = ii.id
+   JOIN tasks t ON ro.task_id = t.id
+   JOIN users rp ON ro.responsible_person = rp.id
+   LEFT JOIN users rv ON ro.reviewed_by = rv.id`;
+
   if (user.role === 'inspector') {
-    // Inspector sees orders they created (from their tasks)
-    orders = db.prepare(
-      `SELECT ro.*,
-              ii.item_name, ii.category,
-              t.title as task_title, t.area,
-              rp.display_name as responsible_person_name,
-              rv.display_name as reviewer_name
-       FROM rectification_orders ro
-       JOIN inspection_items ii ON ro.inspection_item_id = ii.id
-       JOIN tasks t ON ro.task_id = t.id
-       JOIN users rp ON ro.responsible_person = rp.id
-       LEFT JOIN users rv ON ro.reviewed_by = rv.id
-       WHERE t.assigned_to = ?
-       ORDER BY ro.created_at DESC`
-    ).all(user.id);
+    orders = db.prepare(`${baseQuery} WHERE t.assigned_to = ? ORDER BY ro.created_at DESC`).all(user.id);
   } else if (user.role === 'responsible') {
-    // Responsible person sees orders assigned to them
-    orders = db.prepare(
-      `SELECT ro.*,
-              ii.item_name, ii.category,
-              t.title as task_title, t.area,
-              rp.display_name as responsible_person_name,
-              rv.display_name as reviewer_name
-       FROM rectification_orders ro
-       JOIN inspection_items ii ON ro.inspection_item_id = ii.id
-       JOIN tasks t ON ro.task_id = t.id
-       JOIN users rp ON ro.responsible_person = rp.id
-       LEFT JOIN users rv ON ro.reviewed_by = rv.id
-       WHERE ro.responsible_person = ?
-       ORDER BY ro.created_at DESC`
-    ).all(user.id);
+    orders = db.prepare(`${baseQuery} WHERE ro.responsible_person = ? ORDER BY ro.created_at DESC`).all(user.id);
   } else {
-    // Admin sees all
-    orders = db.prepare(
-      `SELECT ro.*,
-              ii.item_name, ii.category,
-              t.title as task_title, t.area,
-              rp.display_name as responsible_person_name,
-              rv.display_name as reviewer_name
-       FROM rectification_orders ro
-       JOIN inspection_items ii ON ro.inspection_item_id = ii.id
-       JOIN tasks t ON ro.task_id = t.id
-       JOIN users rp ON ro.responsible_person = rp.id
-       LEFT JOIN users rv ON ro.reviewed_by = rv.id
-       ORDER BY ro.created_at DESC`
-    ).all();
+    orders = db.prepare(`${baseQuery} ORDER BY ro.created_at DESC`).all();
   }
 
   res.json(orders);
@@ -69,7 +47,15 @@ router.get('/:id', (req: AuthRequest, res: Response) => {
             ii.item_name, ii.category, ii.description as item_description, ii.photo_url as item_photo_url,
             t.title as task_title, t.area,
             rp.display_name as responsible_person_name,
-            rv.display_name as reviewer_name
+            rv.display_name as reviewer_name,
+            CASE
+              WHEN ro.status != 'completed' AND ro.deadline < date('now', 'localtime') THEN 1
+              ELSE 0
+            END as is_overdue,
+            CASE
+              WHEN ro.status != 'completed' AND ro.deadline >= date('now', 'localtime') AND ro.deadline <= date('now', '+3 days', 'localtime') THEN 1
+              ELSE 0
+            END as is_due_soon
      FROM rectification_orders ro
      JOIN inspection_items ii ON ro.inspection_item_id = ii.id
      JOIN tasks t ON ro.task_id = t.id

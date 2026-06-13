@@ -66,6 +66,8 @@ export interface RectificationOrder {
   area?: string;
   item_description?: string;
   item_photo_url?: string;
+  is_overdue?: number;
+  is_due_soon?: number;
 }
 
 function getToken(): string | null {
@@ -195,6 +197,8 @@ export async function getAdminStats() {
     totalHazards: number;
     pendingHazards: number;
     completedHazards: number;
+    overdueCount: number;
+    dueSoonCount: number;
   }>;
 }
 

@@ -135,7 +135,8 @@ export default function RectificationDetail({ orderId, user, onBack }: Props) {
     );
   }
 
-  const isOverdue = order.status !== 'completed' && new Date(order.deadline) < new Date();
+  const isOverdue = !!order.is_overdue || (order.status !== 'completed' && new Date(order.deadline) < new Date());
+  const isDueSoon = !!order.is_due_soon && !isOverdue;
 
   return (
     <div>
@@ -153,6 +154,11 @@ export default function RectificationDetail({ orderId, user, onBack }: Props) {
               {isOverdue && (
                 <span style={{ marginLeft: 8, fontSize: 12, background: '#e74c3c', color: 'white', padding: '2px 8px', borderRadius: 4 }}>
                   已逾期
+                </span>
+              )}
+              {isDueSoon && (
+                <span style={{ marginLeft: 8, fontSize: 12, background: '#f39c12', color: 'white', padding: '2px 8px', borderRadius: 4 }}>
+                  即将到期
                 </span>
               )}
             </h2>
@@ -190,8 +196,8 @@ export default function RectificationDetail({ orderId, user, onBack }: Props) {
         </div>
         <div className="detail-row">
           <span className="detail-label">整改期限</span>
-          <span className="detail-value" style={{ color: isOverdue ? '#e74c3c' : undefined }}>
-            {order.deadline} {isOverdue ? '(已逾期)' : ''}
+          <span className="detail-value" style={{ color: isOverdue ? '#e74c3c' : isDueSoon ? '#f39c12' : undefined }}>
+            {order.deadline} {isOverdue ? '(已逾期)' : isDueSoon ? '(即将到期)' : ''}
           </span>
         </div>
         <div className="detail-row">

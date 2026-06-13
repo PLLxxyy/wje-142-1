@@ -22,6 +22,8 @@ interface Stats {
   totalHazards: number;
   pendingHazards: number;
   completedHazards: number;
+  overdueCount: number;
+  dueSoonCount: number;
 }
 
 interface AreaStat {
@@ -161,6 +163,14 @@ export default function AdminDashboard({ user }: Props) {
             <div className="stat-card green">
               <div className="stat-value">{stats.completedHazards}</div>
               <div className="stat-label">已整改隐患</div>
+            </div>
+            <div className="stat-card" style={{ borderLeft: '4px solid #e74c3c' }}>
+              <div className="stat-value" style={{ color: '#e74c3c' }}>{stats.overdueCount}</div>
+              <div className="stat-label">已超期</div>
+            </div>
+            <div className="stat-card" style={{ borderLeft: '4px solid #f39c12' }}>
+              <div className="stat-value" style={{ color: '#f39c12' }}>{stats.dueSoonCount}</div>
+              <div className="stat-label">即将到期（3天内）</div>
             </div>
           </div>
 
